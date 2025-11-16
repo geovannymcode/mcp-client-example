@@ -1,0 +1,76 @@
+spring:
+  application:
+    name: mcp-client-example
+
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY}
+      chat:
+        options:
+          model: gpt-4
+          temperature: 0.7
+
+    mcp:
+      client:
+        name: example-mcp-client
+        version: 1.0.0
+        tool-callbacks-enabled: true
+
+        # Configuración para Streamable HTTP
+        streamable-http:
+          connections:
+            employeeData:
+              url: http://localhost:8081/mcp
+              headers:
+                Authorization: Bearer ${MCP_SERVER_TOKEN:default-token}
+
+            companyPolicies:
+              url: http://localhost:8082/mcp
+              headers:
+                Authorization: Bearer ${MCP_SERVER_TOKEN:default-token}
+
+        # Configuración para SSE (Server-Sent Events)
+        sse:
+          connections:
+            marketData:
+              url: http://localhost:8083/mcp
+              headers:
+                Authorization: Bearer ${MCP_SERVER_TOKEN:default-token}
+
+        # Configuración para STDIO (procesos locales)
+        stdio:
+          connections:
+            localTool:
+              command: ["python", "mcp-server-example/simple_mcp_server.py"]
+
+# Configuración de Actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: when-authorized
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+# Logging
+logging:
+  level:
+    root: INFO
+    com.example.mcpclient: DEBUG
+    org.springframework.ai: DEBUG
+    org.springframework.security: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+# Server
+server:
+  port: 8080
+  error:
+    include-message: always
+    include-binding-errors: always
