@@ -7,11 +7,9 @@ import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-
-import org.springframework.ai.model.Content;
-
 
 @Service
 public final class ChatService {
@@ -19,7 +17,6 @@ public final class ChatService {
     private static final Logger logger = LoggerFactory.getLogger(ChatService.class);
 
     private final ChatClient chatClient;
-
 
     public ChatService(ChatClient.Builder chatClientBuilder) {
         this.chatClient = chatClientBuilder.build();
@@ -35,10 +32,14 @@ public final class ChatService {
         logger.debug("Procesando mensaje: {}", message);
 
         try {
-            var content = chatClient.prompt(message).content();
-            var responseText = extractText(content);
+            var responseText = chatClient
+                    .prompt(message)
+                    .call()
+                    .content();
+
             logger.debug("Respuesta generada: {}", responseText);
-            return responseText;
+            return Optional.ofNullable(responseText)
+                    .filter(text -> !text.isBlank());
         } catch (Exception e) {
             logger.error("Error al procesar mensaje: {}", message, e);
             return Optional.empty();
@@ -55,18 +56,24 @@ public final class ChatService {
         logger.debug("Procesando mensaje con contexto: {} - {}", message, context);
 
         try {
-            var userMessage = new UserMessage(message, context);
-            var prompt = new Prompt(userMessage);
-            var content = chatClient.prompt(prompt).content();
-            var responseText = extractText(content);
+            // Construir el mensaje enriquecido con contexto
+            var enrichedMessage = buildEnrichedMessage(message, context);
+            var userMessage = new UserMessage(enrichedMessage);
+            var prompt = new Prompt(List.of(userMessage));
+
+            var responseText = chatClient
+                    .prompt(prompt)
+                    .call()
+                    .content();
+
             logger.debug("Respuesta generada con contexto: {}", responseText);
-            return responseText;
+            return Optional.ofNullable(responseText)
+                    .filter(text -> !text.isBlank());
         } catch (Exception e) {
             logger.error("Error al procesar mensaje con contexto: {}", message, e);
             return Optional.empty();
         }
     }
-
 
     public Optional<String> processMessageWithSystemPrompt(String message, String systemMessage) {
         if (message == null || message.isBlank()) {
@@ -77,14 +84,15 @@ public final class ChatService {
         logger.debug("Procesando mensaje con system prompt: {}", message);
 
         try {
-            var content = chatClient.prompt()
+            var responseText = chatClient.prompt()
                     .system(systemMessage)
                     .user(message)
+                    .call()
                     .content();
 
-            var responseText = extractText(content);
             logger.debug("Respuesta generada con system prompt: {}", responseText);
-            return responseText;
+            return Optional.ofNullable(responseText)
+                    .filter(text -> !text.isBlank());
         } catch (Exception e) {
             logger.error("Error al procesar mensaje con system prompt: {}", message, e);
             return Optional.empty();
@@ -92,18 +100,41 @@ public final class ChatService {
     }
 
 
-    private Optional<String> extractText(Content content) {
-        if (content == null) {
-            return Optional.empty();
+    private String buildEnrichedMessage(String message, Map<String, Object> context) {
+        if (context == null || context.isEmpty()) {
+            return message;
         }
 
-        var text = content.text();
-        return Optional.ofNullable(text)
-                .filter(t -> !t.isBlank());
+        var contextInfo = new StringBuilder();
+        contextInfo.append("Contexto: ");
+
+        context.forEach((key, value) ->
+                contextInfo.append(key).append("=").append(value).append(", ")
+        );
+
+        // Remover la última coma y espacio
+        if (contextInfo.length() > 10) {
+            contextInfo.setLength(contextInfo.length() - 2);
+        }
+
+        return contextInfo + "\n\nConsulta: " + message;
+    }
+
+
+    public Map<String, Object> createSuccessResponse(String response) {
+        return Map.of(
+                "response", response,
+                "status", "success",
+                "timestamp", System.currentTimeMillis()
+        );
+    }
+
+
+    public Map<String, Object> createErrorResponse(String errorMessage) {
+        return Map.of(
+                "status", "error",
+                "message", errorMessage,
+                "timestamp", System.currentTimeMillis()
+        );
     }
 }
-
-
-
-
-
