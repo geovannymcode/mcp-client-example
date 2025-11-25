@@ -42,7 +42,7 @@ public final class QueryResponse {
                 .build();
     }
 
-   
+
     public static QueryResponse error(String errorMessage) {
         return QueryResponse.builder()
                 .response("Error: " + errorMessage)
