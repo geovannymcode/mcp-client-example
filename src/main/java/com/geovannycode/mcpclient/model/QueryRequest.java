@@ -20,7 +20,7 @@ public record QueryRequest(
     public static QueryRequest of(String query) {
         return new QueryRequest(query, null, null);
     }
-    
+
     public static QueryRequest of(String query, String employeeId) {
         return new QueryRequest(query, employeeId, null);
     }
