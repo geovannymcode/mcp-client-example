@@ -5,9 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 public record QueryRequest(
         @NotBlank(message = "La consulta no puede estar vacía")
         String query,
-
         String employeeId,
-
         String context
 ) {
 
