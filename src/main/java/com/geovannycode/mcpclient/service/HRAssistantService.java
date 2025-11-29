@@ -2,11 +2,9 @@ package com.geovannycode.mcpclient.service;
 
 import com.geovannycode.mcpclient.model.QueryRequest;
 import com.geovannycode.mcpclient.model.QueryResponse;
-import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.tool.ToolCallbackProvider;
-import org.springframework.stereotype.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -18,7 +16,6 @@ import java.util.Optional;
 public class HRAssistantService {
 
     private static final Logger logger = LoggerFactory.getLogger(HRAssistantService.class);
-
 
     private static final String SYSTEM_MESSAGE = """
         Eres un asistente de Recursos Humanos profesional y amable.
@@ -34,7 +31,6 @@ public class HRAssistantService {
         Si la consulta requiere aprobación de un superior, indícalo claramente.
         """;
 
-   
     private static final List<String> DEFAULT_TOOLS = List.of(
             "employeeData",
             "companyPolicies",
@@ -42,22 +38,10 @@ public class HRAssistantService {
     );
 
     private final ChatService chatService;
-    private final ChatClient chatClient;
 
-    public HRAssistantService(
-            ChatClient.Builder builder,
-            ToolCallbackProvider toolCallbackProvider,
-            ChatService chatService) {
-
+    public HRAssistantService(ChatService chatService) {
         this.chatService = chatService;
-
-        this.chatClient = builder
-                .defaultToolCallbacks(toolCallbackProvider.getToolCallbacks())
-                .defaultSystem(SYSTEM_MESSAGE)
-                .build();
-
-        logger.info("HR Assistant Service initialized with {} tools",
-                toolCallbackProvider.getToolCallbacks().length);
+        logger.info("HR Assistant Service initialized");
     }
 
     public Optional<QueryResponse> processQuery(QueryRequest request) {
@@ -66,7 +50,6 @@ public class HRAssistantService {
         return chatService.processMessageWithContext(request.query(), context)
                 .map(response -> buildSuccessResponse(response, request.employeeId()));
     }
-
 
     public Optional<Map<String, Object>> getPolicyInformation(String policyName) {
         var query = String.format(
@@ -148,5 +131,4 @@ public class HRAssistantService {
         response.put("timestamp", LocalDateTime.now());
         return response;
     }
-
 }
