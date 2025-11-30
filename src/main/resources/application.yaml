@@ -17,31 +17,31 @@ spring:
         tool-callbacks-enabled: true
 
         # Configuración para Streamable HTTP
-        streamable-http:
-          connections:
-            employeeData:
-              url: http://localhost:8081/mcp
-              headers:
-                Authorization: Bearer ${MCP_SERVER_TOKEN:default-token}
+        #streamable-http:
+        #  connections:
+        #    employeeData:
+        #      url: http://localhost:8081/mcp
+        #      headers:
+        #        Authorization: Bearer ${MCP_SERVER_TOKEN:default-token}
 
-            companyPolicies:
-              url: http://localhost:8082/mcp
-              headers:
-                Authorization: Bearer ${MCP_SERVER_TOKEN:default-token}
+        #    companyPolicies:
+        #      url: http://localhost:8082/mcp
+        #      headers:
+        #        Authorization: Bearer ${MCP_SERVER_TOKEN:default-token}
 
         # Configuración para SSE (Server-Sent Events)
-        sse:
-          connections:
-            marketData:
-              url: http://localhost:8083/mcp
-              headers:
-                Authorization: Bearer ${MCP_SERVER_TOKEN:default-token}
+        #sse:
+        #  connections:
+        #    marketData:
+        #      url: http://localhost:8083/mcp
+        #      headers:
+        #        Authorization: Bearer ${MCP_SERVER_TOKEN:default-token}
 
         # Configuración para STDIO (procesos locales)
         stdio:
           connections:
             localTool:
-              command: ["python", "mcp-server-example/simple_mcp_server.py"]
+              command: ["python3", "simple_mcp_server.py"]
 
 # Configuración de Actuator
 management:
