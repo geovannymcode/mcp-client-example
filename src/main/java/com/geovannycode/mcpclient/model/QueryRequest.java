@@ -2,11 +2,13 @@ package com.geovannycode.mcpclient.model;
 
 import jakarta.validation.constraints.NotBlank;
 
+import java.util.Map;
+
 public record QueryRequest(
         @NotBlank(message = "La consulta no puede estar vacía")
         String query,
         String employeeId,
-        String context
+        Map<String, Object> context
 ) {
 
     public QueryRequest {
