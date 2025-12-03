@@ -12,7 +12,7 @@ import java.util.Map;
 import java.util.Optional;
 
 @Service
-public final class ChatService {
+public class ChatService {
 
     private static final Logger logger = LoggerFactory.getLogger(ChatService.class);
 
