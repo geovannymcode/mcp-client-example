@@ -89,12 +89,12 @@ public class HRAssistantService {
     private Map<String, Object> buildContext(QueryRequest request) {
         var context = new HashMap<String, Object>();
 
-        if (request.employeeId() != null) {
+        if (request.employeeId() != null && !request.employeeId().isBlank()) {
             context.put("employeeId", request.employeeId());
         }
 
-        if (request.context() != null) {
-            context.put("additionalContext", request.context());
+        if (request.context() != null && !request.context().isEmpty()) {
+            context.putAll(request.context());
         }
 
         return context;
